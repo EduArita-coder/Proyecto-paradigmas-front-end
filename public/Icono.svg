@@ -1,0 +1,93 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="35%" cy="25%" r="85%">
+      <stop offset="0%" stop-color="#2a1250"/>
+      <stop offset="55%" stop-color="#180a33"/>
+      <stop offset="100%" stop-color="#0c0620"/>
+    </radialGradient>
+
+    <linearGradient id="padGrad" x1="10%" y1="0%" x2="95%" y2="100%">
+      <stop offset="0%" stop-color="#4d5bf0"/>
+      <stop offset="35%" stop-color="#9b3bf2"/>
+      <stop offset="65%" stop-color="#e23bd6"/>
+      <stop offset="100%" stop-color="#ff5fae"/>
+    </linearGradient>
+
+    <linearGradient id="padGradDark" x1="10%" y1="0%" x2="95%" y2="100%">
+      <stop offset="0%" stop-color="#3a2270"/>
+      <stop offset="50%" stop-color="#7a2bb8"/>
+      <stop offset="100%" stop-color="#c22ea0"/>
+    </linearGradient>
+
+    <radialGradient id="buttonHole" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#1c0d38"/>
+      <stop offset="100%" stop-color="#0c0620"/>
+    </radialGradient>
+
+    <linearGradient id="stickShine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#ffb3e8"/>
+    </linearGradient>
+
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- fondo -->
+  <circle cx="256" cy="256" r="256" fill="url(#bg)"/>
+
+  <!-- resplandor detrás del control -->
+  <ellipse cx="256" cy="270" rx="190" ry="120" fill="#c23bf2" opacity="0.25" filter="url(#glow)"/>
+
+  <!-- cuerpo del control -->
+  <g>
+    <path d="M140 210
+             C150 160 200 140 240 150
+             C260 155 270 170 290 170
+             C310 170 320 155 340 150
+             C380 140 430 160 440 210
+             C450 255 445 300 430 330
+             C415 358 385 365 365 345
+             C350 330 340 305 300 305
+             C280 305 275 315 260 315
+             C245 315 240 305 220 305
+             C180 305 170 330 155 345
+             C135 365 105 358 90 330
+             C75 300 70 255 80 210
+             C90 175 120 175 140 210 Z"
+          fill="url(#padGrad)"/>
+  </g>
+
+  <!-- D-pad (izquierda) -->
+  <g transform="translate(150,240)">
+    <circle r="52" fill="url(#buttonHole)"/>
+    <g fill="url(#stickShine)">
+      <rect x="-11" y="-38" width="22" height="76" rx="6"/>
+      <rect x="-38" y="-11" width="76" height="22" rx="6"/>
+    </g>
+  </g>
+
+  <!-- Botones (derecha) -->
+  <g transform="translate(360,235)">
+    <circle r="58" fill="url(#buttonHole)"/>
+    <circle cx="0" cy="-32" r="15" fill="url(#stickShine)"/>
+    <circle cx="32" cy="0" r="15" fill="#ffe3f5"/>
+    <circle cx="0" cy="32" r="15" fill="#ffe3f5"/>
+    <circle cx="-32" cy="0" r="15" fill="#ffe3f5"/>
+  </g>
+
+  <!-- detalles centrales -->
+  <rect x="235" y="188" width="42" height="8" rx="4" fill="#ffffff" opacity="0.85"/>
+  <circle cx="256" cy="222" r="9" fill="url(#stickShine)"/>
+  <circle cx="230" cy="255" r="6" fill="#ff8fd6" opacity="0.9"/>
+  <circle cx="282" cy="255" r="6" fill="#7dd8ff" opacity="0.9"/>
+
+  <!-- sombra inferior sutil -->
+  <path d="M90 330 C135 365 155 345 155 345 C170 330 180 305 220 305 C240 305 245 315 260 315 C275 315 280 305 300 305 C340 305 350 330 365 345 C365 345 385 365 430 330"
+        stroke="url(#padGradDark)" stroke-width="4" fill="none" opacity="0.4"/>
+</svg>
