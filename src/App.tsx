@@ -1,13 +1,11 @@
-import './App.css'
-function App() {
+import Navbar from "./components/Navbar";
 
+function App() {
   return (
     <>
-      <div className = "font-serif">
-        Hola tilines
-      </div>
+      <Navbar />
     </>
-  )
+  );
 }
 
-export default App
+export default App;
