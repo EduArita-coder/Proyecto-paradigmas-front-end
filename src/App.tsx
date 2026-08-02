@@ -1,10 +1,10 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Navbar from "./components/Navbar";
 import HomePage from "./pages/HomePage";
 import CatalogoPage from "./pages/CatalogoPage";
 import CarritoPage from "./pages/CarritoPage";
 import HistorialPage from "./pages/HistorialPage";
 import "./App.css";
+import Navbar from "./components/Layout/Navbar";
 
 function App() {
   return (
