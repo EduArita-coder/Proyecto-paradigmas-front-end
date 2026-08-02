@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { api } from "../services/api";
+import { getProductos } from "../services/apiService";
 import type { Producto } from "../interfaces/product";
 import { useCart } from "../contexts/CartContext";
 import { useAuth } from "../context/AuthContext";
@@ -18,7 +18,7 @@ export default function CatalogoPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.get<Producto[]>("/productos");
+      const data = await getProductos();
       setProducts(data || []);
     } catch (err: any) {
       setError(err.message || "No se pudo establecer conexión con el servidor");

@@ -1,4 +1,5 @@
 import api from '../api/axios';
+import type { Producto } from '../interfaces/product';
 
 export interface Product {
   id: string;
@@ -14,14 +15,18 @@ export interface Product {
 export interface CartItem {
   productId: string;
   productName: string;
+  unitPrice: number;
   price: number;
   quantity: number;
+  subtotal: number;
   imageUrl?: string;
 }
 
 export interface Cart {
+  userId?: string;
   items: CartItem[];
   total: number;
+  totalAmount: number;
 }
 
 export interface Transaction {
@@ -36,7 +41,7 @@ export interface Transaction {
 }
 
 // Servidor / Productos
-export const getProductos = async (): Promise<Product[]> => {
+export const getProductos = async (): Promise<Producto[]> => {
   const response = await api.get('/productos');
   return response.data;
 };

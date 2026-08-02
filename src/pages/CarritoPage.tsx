@@ -19,7 +19,7 @@ export default function CarritoPage() {
     try {
       setIsCheckingOut(true);
       const res = await checkout();
-      if (!res?.approvalUrl) {
+      if (res && !res.approvalUrl) {
         navigate("/checkout/success");
       }
     } catch (err) {
@@ -91,7 +91,7 @@ export default function CarritoPage() {
                           {item.productName || "Servidor Dedicado"}
                         </h4>
                         <p className="text-slate-400 text-sm">
-                          Precio unitario: {formatPrice(item.unitPrice || 0)}
+                          Precio unitario: {formatPrice(item.unitPrice ?? item.price ?? 0)}
                         </p>
                       </div>
                     </div>
@@ -122,7 +122,7 @@ export default function CarritoPage() {
                           Subtotal
                         </span>
                         <span className="font-bold text-white text-base">
-                          {formatPrice(item.subtotal || 0)}
+                          {formatPrice(item.subtotal ?? (item.unitPrice ?? item.price ?? 0) * item.quantity)}
                         </span>
                       </div>
                       <button

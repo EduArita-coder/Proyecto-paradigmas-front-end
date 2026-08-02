@@ -1,11 +1,9 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
-import { api } from "../services/api";
-import type { CartDto, CartItemDto } from "../interfaces/cart";
+import { getCart, addToCart, updateCartItemQuantity, removeFromCart, clearCart as apiClearCart, checkoutCart, type Cart } from "../services/apiService";
 import type { Producto } from "../interfaces/product";
-import { getSessionId } from "../utils/session";
 
 interface CartContextType {
-  cart: CartDto | null;
+  cart: Cart | null;
   loading: boolean;
   error: string | null;
   addItem: (product: Producto) => Promise<void>;
@@ -19,21 +17,20 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [cart, setCart] = useState<CartDto | null>(null);
+  const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const sessionId = getSessionId();
 
   const refreshCart = useCallback(async () => {
     try {
-      const data = await api.get<CartDto>(`/carrito/${sessionId}`);
+      const data = await getCart();
       setCart(data);
     } catch (err: any) {
       setError(err.message || "Error al cargar el carrito");
     } finally {
       setLoading(false);
     }
-  }, [sessionId]);
+  }, []);
 
   useEffect(() => {
     refreshCart();
@@ -42,12 +39,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addItem = async (product: Producto) => {
     try {
       setError(null);
-      const itemPayload: CartItemDto = {
-        productId: product.id,
-        quantity: 1,
-      };
-      const updatedCart = await api.post<CartDto>(`/carrito/${sessionId}/items`, itemPayload);
-      setCart(updatedCart);
+      await addToCart(product.id, 1);
+      await refreshCart();
     } catch (err: any) {
       setError(err.message || "Error al agregar el producto al carrito");
       await refreshCart();
@@ -61,8 +54,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
     try {
       setError(null);
-      const updatedCart = await api.put<CartDto>(`/carrito/${sessionId}/items/${productId}`, quantity);
-      setCart(updatedCart);
+      await updateCartItemQuantity(productId, quantity);
+      await refreshCart();
     } catch (err: any) {
       setError(err.message || "Error al actualizar la cantidad");
       await refreshCart();
@@ -72,8 +65,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const removeItem = async (productId: string) => {
     try {
       setError(null);
-      const updatedCart = await api.delete<CartDto>(`/carrito/${sessionId}/items/${productId}`);
-      setCart(updatedCart);
+      await removeFromCart(productId);
+      await refreshCart();
     } catch (err: any) {
       setError(err.message || "Error al eliminar el producto");
       await refreshCart();
@@ -83,8 +76,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const clearCart = async () => {
     try {
       setError(null);
-      const updatedCart = await api.delete<CartDto>(`/carrito/${sessionId}`);
-      setCart(updatedCart);
+      await apiClearCart();
+      await refreshCart();
     } catch (err: any) {
       setError(err.message || "Error al vaciar el carrito");
       await refreshCart();
@@ -94,7 +87,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const checkout = async () => {
     try {
       setError(null);
-      const res = await api.post<{ approvalUrl?: string; orderId?: string }>(`/carrito/${sessionId}/checkout`);
+      const res = await checkoutCart();
       if (res?.approvalUrl) {
         window.location.href = res.approvalUrl;
       }
@@ -105,7 +98,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const total = cart?.totalAmount || 0;
+  const total = cart?.totalAmount ?? cart?.total ?? 0;
 
   return (
     <CartContext.Provider
@@ -113,7 +106,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     >
       {children}
     </CartContext.Provider>
-  );
   );
 }
 
