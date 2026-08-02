@@ -3,20 +3,23 @@ import HomePage from "./pages/HomePage";
 import CatalogoPage from "./pages/CatalogoPage";
 import CarritoPage from "./pages/CarritoPage";
 import HistorialPage from "./pages/HistorialPage";
+import { CartProvider } from "./contexts/CartContext";
 import "./App.css";
 import Navbar from "./components/Layout/Navbar";
 
 function App() {
   return (
-    <BrowserRouter>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/catalogo" element={<CatalogoPage />} />
-        <Route path="/carrito" element={<CarritoPage />} />
-        <Route path="/historial" element={<HistorialPage />} />
-      </Routes>
-    </BrowserRouter>
+    <CartProvider>
+      <BrowserRouter>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/catalogo" element={<CatalogoPage />} />
+          <Route path="/carrito" element={<CarritoPage />} />
+          <Route path="/historial" element={<HistorialPage />} />
+        </Routes>
+      </BrowserRouter>
+    </CartProvider>
   );
 }
 
