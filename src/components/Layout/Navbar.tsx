@@ -1,14 +1,18 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useCart } from "../../contexts/CartContext";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
+  const { cart } = useCart();
+
+  const cartItemsCount = cart?.items?.reduce((acc, item) => acc + item.quantity, 0) || 0;
 
   const links = [
     { label: "Inicio", to: "/" },
     { label: "Catálogo", to: "/catalogo" },
-    { label: "Carrito", to: "/carrito" },
+    { label: cartItemsCount > 0 ? `Carrito (${cartItemsCount})` : "Carrito", to: "/carrito" },
     { label: "Historial", to: "/historial" },
   ];
 
