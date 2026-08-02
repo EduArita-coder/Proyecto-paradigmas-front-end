@@ -16,3 +16,10 @@ body::before {
   backdrop-filter: blur(4px);    
   z-index: -1; 
 }
+
+.container {
+  display: flex;
+  justify-content: center; /* Centra horizontalmente */
+  align-items: center;     /* Centra verticalmente */
+  height: 100vh;           /* Ocupa toda la pantalla */
+}

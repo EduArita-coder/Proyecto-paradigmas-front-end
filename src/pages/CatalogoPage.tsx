@@ -1,122 +1,99 @@
-import { useEffect, useState } from 'react';
-import { getProductos, addToCart } from '../services/apiService';
-import type { Product } from '../services/apiService';
-import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { api } from "../services/api";
+import type { Producto } from "../interfaces/product";
+import { useCart } from "../contexts/CartContext";
+import { useAuth } from "../context/AuthContext";
+import ProductCard from "../components/ProductCard";
 
 export default function CatalogoPage() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Producto[]>([]);
   const [loading, setLoading] = useState(true);
-  const [addingId, setAddingId] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
-
+  const [error, setError] = useState<string | null>(null);
+  const { addItem } = useCart();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      const data = await getProductos();
-      setProducts(data);
-    } catch (err) {
-      console.error('Error al cargar productos:', err);
+      const data = await api.get<Producto[]>("/productos");
+      setProducts(data || []);
+    } catch (err: any) {
+      setError(err.message || "No se pudo establecer conexión con el servidor");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleAddToCart = async (productId: string) => {
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  const handleAdd = (product: Producto) => {
     if (!isAuthenticated) {
-      navigate('/login');
+      navigate("/login");
       return;
     }
-
-    try {
-      setAddingId(productId);
-      await addToCart(productId, 1);
-      setMessage('¡Producto agregado al carrito!');
-      setTimeout(() => setMessage(null), 3000);
-    } catch (err) {
-      console.error('Error agregando producto:', err);
-    } finally {
-      setAddingId(null);
-    }
+    addItem(product);
   };
 
   return (
     <main className="min-h-[calc(100vh-64px)] px-6 py-12">
       <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-2">
-              Nuestros Servidores
-            </h1>
-            <p className="text-slate-400 text-lg">
-              Elige el servidor perfecto para alojar tu comunidad con máximo rendimiento.
-            </p>
-          </div>
-        </div>
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-2">
+          Nuestros Servidores
+        </h1>
+        <p className="text-slate-400 text-lg mb-10">
+          Elige el juego y el plan que mejor se adapte a tu comunidad.
+        </p>
 
-        {message && (
-          <div className="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-center font-medium">
-            {message}
+        {loading && (
+          <div className="flex flex-col items-center justify-center min-h-[300px]">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+            <p className="text-slate-400 text-lg font-medium animate-pulse">
+              Cargando servidores disponibles...
+            </p>
           </div>
         )}
 
-        {loading ? (
-          <div className="flex justify-center py-20 text-slate-400 animate-pulse">
-            Cargando catálogo...
+        {!loading && error && (
+          <div className="max-w-md mx-auto text-center bg-red-500/10 border border-red-500/20 rounded-2xl p-8 backdrop-blur-md">
+            <span className="text-5xl mb-4 block">⚠️</span>
+            <h3 className="text-xl font-bold text-white mb-2">
+              Error al cargar el catálogo
+            </h3>
+            <p className="text-slate-400 mb-6">{error}</p>
+            <button
+              onClick={fetchProducts}
+              className="px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-lg transition-colors font-semibold text-sm cursor-pointer"
+            >
+              Reintentar
+            </button>
           </div>
-        ) : products.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-12 flex flex-col items-center justify-center text-slate-500">
-            <span className="text-5xl mb-4">🎮</span>
-            <p>No hay servidores disponibles en este momento.</p>
+        )}
+
+        {!loading && !error && products.length === 0 && (
+          <div className="max-w-md mx-auto text-center bg-white/5 border border-white/10 rounded-2xl p-12 backdrop-blur-md">
+            <span className="text-5xl mb-4 block">🎮</span>
+            <h3 className="text-xl font-bold text-white mb-2">
+              No hay planes disponibles
+            </h3>
+            <p className="text-slate-400">
+              Próximamente agregaremos nuevos servidores a nuestro catálogo.
+            </p>
           </div>
-        ) : (
+        )}
+
+        {!loading && !error && products.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((product) => (
-              <div
+              <ProductCard
                 key={product.id}
-                className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-sm p-6 flex flex-col justify-between hover:border-cyan-500/40 transition-all shadow-xl"
-              >
-                <div>
-                  {product.imageUrl && (
-                    <img
-                      src={product.imageUrl}
-                      alt={product.name}
-                      className="w-full h-40 object-cover rounded-xl mb-4 border border-white/5"
-                    />
-                  )}
-                  <h2 className="text-xl font-bold text-white mb-2">{product.name}</h2>
-                  <p className="text-slate-400 text-sm mb-4 line-clamp-2">
-                    {product.description}
-                  </p>
-
-                  <div className="grid grid-cols-2 gap-2 text-xs text-slate-300 mb-6 bg-white/5 p-3 rounded-lg border border-white/5">
-                    <div>⚡ CPU: <span className="font-semibold text-cyan-400">{product.cpu}</span></div>
-                    <div>🧠 RAM: <span className="font-semibold text-cyan-400">{product.ram}</span></div>
-                    <div>👥 Slots: <span className="font-semibold text-cyan-400">{product.slots}</span></div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-4 border-t border-white/10">
-                  <div>
-                    <span className="text-xs text-slate-400">Precio / mes</span>
-                    <p className="text-2xl font-black text-white">${product.price.toFixed(2)}</p>
-                  </div>
-                  <button
-                    onClick={() => handleAddToCart(product.id)}
-                    disabled={addingId === product.id}
-                    className="px-4 py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white text-sm font-semibold rounded-xl transition-all shadow-md cursor-pointer disabled:opacity-50"
-                  >
-                    {addingId === product.id ? 'Añadiendo...' : 'Contratar'}
-                  </button>
-                </div>
-              </div>
+                product={product}
+                onAdd={handleAdd}
+              />
             ))}
           </div>
         )}

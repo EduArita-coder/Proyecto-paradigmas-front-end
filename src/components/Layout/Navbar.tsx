@@ -1,17 +1,21 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
+import { useCart } from "../../contexts/CartContext";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
+  const { cart } = useCart();
+
+  const cartItemsCount = cart?.items?.reduce((acc, item) => acc + item.quantity, 0) || 0;
 
   const links = [
     { label: "Inicio", to: "/" },
     { label: "Catálogo", to: "/catalogo" },
-    { label: "Carrito", to: "/carrito" },
+    { label: cartItemsCount > 0 ? `Carrito (${cartItemsCount})` : "Carrito", to: "/carrito" },
     { label: "Historial", to: "/historial" },
   ];
 
@@ -23,7 +27,7 @@ export default function Navbar() {
   return (
     <nav className="bg-slate-900/80 backdrop-blur-md text-white px-6 py-4 sticky top-0 z-50 border-b border-white/10">
       <div className="max-w-6xl mx-auto flex items-center justify-between">
-        <Link to="/" className="text-xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent hover:opacity-80 transition-opacity">
+        <Link to="/" className="text-xl font-bold bg-linear-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent hover:opacity-80 transition-opacity">
           GameHosting
         </Link>
 
