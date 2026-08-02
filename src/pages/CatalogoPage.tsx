@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 import type { Producto } from "../interfaces/product";
 import { useCart } from "../contexts/CartContext";
+import { useAuth } from "../context/AuthContext";
 import ProductCard from "../components/ProductCard";
 
 export default function CatalogoPage() {
@@ -9,12 +11,13 @@ export default function CatalogoPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { addItem } = useCart();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      // Endpoint real del backend: /api/productos
       const data = await api.get<Producto[]>("/productos");
       setProducts(data || []);
     } catch (err: any) {
@@ -27,6 +30,14 @@ export default function CatalogoPage() {
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
+
+  const handleAdd = (product: Producto) => {
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
+    addItem(product);
+  };
 
   return (
     <main className="min-h-[calc(100vh-64px)] px-6 py-12">
@@ -51,7 +62,7 @@ export default function CatalogoPage() {
           <div className="max-w-md mx-auto text-center bg-red-500/10 border border-red-500/20 rounded-2xl p-8 backdrop-blur-md">
             <span className="text-5xl mb-4 block">⚠️</span>
             <h3 className="text-xl font-bold text-white mb-2">
-              Error al cargar el catalogo
+              Error al cargar el catálogo
             </h3>
             <p className="text-slate-400 mb-6">{error}</p>
             <button
@@ -70,7 +81,7 @@ export default function CatalogoPage() {
               No hay planes disponibles
             </h3>
             <p className="text-slate-400">
-              Proximamente agregaremos nuevos servidores a nuestro calalogo.
+              Próximamente agregaremos nuevos servidores a nuestro catálogo.
             </p>
           </div>
         )}
@@ -81,7 +92,7 @@ export default function CatalogoPage() {
               <ProductCard
                 key={product.id}
                 product={product}
-                onAdd={addItem}
+                onAdd={handleAdd}
               />
             ))}
           </div>

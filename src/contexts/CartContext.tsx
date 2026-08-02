@@ -12,6 +12,7 @@ interface CartContextType {
   updateQuantity: (productId: string, quantity: number) => Promise<void>;
   removeItem: (productId: string) => Promise<void>;
   clearCart: () => Promise<void>;
+  checkout: () => Promise<{ approvalUrl?: string; orderId?: string } | void>;
   total: number;
 }
 
@@ -90,14 +91,29 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const checkout = async () => {
+    try {
+      setError(null);
+      const res = await api.post<{ approvalUrl?: string; orderId?: string }>(`/carrito/${sessionId}/checkout`);
+      if (res?.approvalUrl) {
+        window.location.href = res.approvalUrl;
+      }
+      return res;
+    } catch (err: any) {
+      setError(err.message || "Error al procesar el pago");
+      throw err;
+    }
+  };
+
   const total = cart?.totalAmount || 0;
 
   return (
     <CartContext.Provider
-      value={{ cart, loading, error, addItem, updateQuantity, removeItem, clearCart, total }}
+      value={{ cart, loading, error, addItem, updateQuantity, removeItem, clearCart, checkout, total }}
     >
       {children}
     </CartContext.Provider>
+  );
   );
 }
 

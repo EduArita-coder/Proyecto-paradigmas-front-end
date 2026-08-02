@@ -1,7 +1,11 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 
 export default function CarritoPage() {
-  const { cart, loading, error, updateQuantity, removeItem, clearCart, total } = useCart();
+  const { cart, loading, error, updateQuantity, removeItem, clearCart, checkout, total } = useCart();
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const navigate = useNavigate();
 
   const formatPrice = (amount: number) => {
     return new Intl.NumberFormat("es-CR", {
@@ -9,6 +13,20 @@ export default function CarritoPage() {
       currency: "CRC",
       minimumFractionDigits: 0,
     }).format(amount);
+  };
+
+  const handleCheckout = async () => {
+    try {
+      setIsCheckingOut(true);
+      const res = await checkout();
+      if (!res?.approvalUrl) {
+        navigate("/checkout/success");
+      }
+    } catch (err) {
+      console.error("Error al procesar el pago:", err);
+    } finally {
+      setIsCheckingOut(false);
+    }
   };
 
   const isCartEmpty = !cart || !cart.items || cart.items.length === 0;
@@ -137,8 +155,19 @@ export default function CarritoPage() {
                   </span>
                 </div>
 
-                <button className="w-full sm:w-auto px-6 py-3 bg-linear-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-bold rounded-lg shadow-lg hover:shadow-cyan-500/20 transition-all cursor-pointer text-sm text-center">
-                  Proceder al Pago
+                <button
+                  onClick={handleCheckout}
+                  disabled={isCheckingOut}
+                  className="w-full sm:w-auto px-6 py-3 bg-linear-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-bold rounded-lg shadow-lg hover:shadow-cyan-500/20 transition-all cursor-pointer text-sm text-center disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isCheckingOut ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                      <span>Procesando...</span>
+                    </>
+                  ) : (
+                    "Proceder al Pago"
+                  )}
                 </button>
               </div>
             </div>
