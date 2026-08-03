@@ -6,9 +6,9 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, onAdd }: ProductCardProps) {
-  const formattedPrice = new Intl.NumberFormat("es-CR", {
+  const formattedPrice = new Intl.NumberFormat("es-HN", {
     style: "currency",
-    currency: "CRC",
+    currency: "HNL",
     minimumFractionDigits: 0,
   }).format(product.price);
 
@@ -16,20 +16,19 @@ export default function ProductCard({ product, onAdd }: ProductCardProps) {
     <div className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-md p-6 flex flex-col justify-between transition-all duration-300 hover:border-white/20 hover:scale-[1.02] shadow-xl group">
       <div>
         {product.imageUrl ? (
-          <div className="h-40 w-full overflow-hidden rounded-xl bg-slate-950 mb-4 border border-white/5 relative">
+          <div className="h-32 w-full overflow-hidden rounded-xl bg-slate-950 mb-4 border border-white/5 relative flex items-center justify-center">
             <img
               src={product.imageUrl}
               alt={product.name}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+              className="max-h-32 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
               onError={(e) => {
-                // Fallback if image fails to load
                 (e.target as HTMLImageElement).src = "https://placehold.co/600x400/0f172a/ffffff?text=" + encodeURIComponent(product.name);
               }}
             />
           </div>
         ) : (
-          <div className="h-40 w-full rounded-xl bg-slate-950 flex items-center justify-center mb-4 border border-white/5 text-5xl">
-            🎮
+          <div className="h-32 w-full rounded-xl bg-slate-950 flex items-center justify-center mb-4 border border-white/5 text-5xl">
+            
           </div>
         )}
 
@@ -37,7 +36,7 @@ export default function ProductCard({ product, onAdd }: ProductCardProps) {
           {product.name}
         </h3>
 
-        <p className="text-slate-400 text-sm mb-4 line-clamp-2 min-h-[40px]">
+        <p className="text-slate-400 text-sm mb-4 line-clamp-2 min-h-10">
           {product.description}
         </p>
 

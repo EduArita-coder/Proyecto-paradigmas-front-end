@@ -1,13 +1,13 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
-import CatalogoPage from "./pages/CatalogoPage";
-import CarritoPage from "./pages/CarritoPage";
-import HistorialPage from "./pages/HistorialPage";
+import CatalogoPage from "./pages/Carrito/CatalogoPage";
+import CarritoPage from "./pages/Carrito/CarritoPage";
+import HistorialPage from "./pages/Carrito/HistorialPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import CheckoutSuccessPage from "./pages/CheckoutSuccessPage";
 import CheckoutCancelPage from "./pages/CheckoutCancelPage";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import { CartProvider } from "./contexts/CartContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import "./App.css";

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
 import { getCart, addToCart, updateCartItemQuantity, removeFromCart, clearCart as apiClearCart, checkoutCart, type Cart } from "../services/apiService";
+import { useAuth } from "./AuthContext";
 import type { Producto } from "../interfaces/product";
 
 interface CartContextType {
@@ -17,6 +18,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  const { token } = useAuth();
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,8 +35,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    refreshCart();
-  }, [refreshCart]);
+    if (token) {
+      refreshCart();
+    } else {
+      setCart(null);
+      setLoading(false);
+    }
+  }, [refreshCart, token]);
 
   const addItem = async (product: Producto) => {
     try {

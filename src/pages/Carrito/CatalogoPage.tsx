@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { getProductos } from "../services/apiService";
-import type { Producto } from "../interfaces/product";
-import { useCart } from "../contexts/CartContext";
-import { useAuth } from "../context/AuthContext";
-import ProductCard from "../components/ProductCard";
+import { getProductos } from "../../services/apiService";
+import type { Producto } from "../../interfaces/product";
+import { useCart } from "../../contexts/CartContext";
+import { useAuth } from "../../contexts/AuthContext";
+import ProductCard from "../../components/ProductCard";
 
 export default function CatalogoPage() {
   const [products, setProducts] = useState<Producto[]>([]);
@@ -50,7 +50,7 @@ export default function CatalogoPage() {
         </p>
 
         {loading && (
-          <div className="flex flex-col items-center justify-center min-h-[300px]">
+          <div className="flex flex-col items-center justify-center min-h-75">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
             <p className="text-slate-400 text-lg font-medium animate-pulse">
               Cargando servidores disponibles...
@@ -76,7 +76,7 @@ export default function CatalogoPage() {
 
         {!loading && !error && products.length === 0 && (
           <div className="max-w-md mx-auto text-center bg-white/5 border border-white/10 rounded-2xl p-12 backdrop-blur-md">
-            <span className="text-5xl mb-4 block">🎮</span>
+            <span className="text-5xl mb-4 block">{<img className = "min-h-2"src="Images/Steve.png"></img>}</span>
             <h3 className="text-xl font-bold text-white mb-2">
               No hay planes disponibles
             </h3>
