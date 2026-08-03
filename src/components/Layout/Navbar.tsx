@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { useCart } from "../../contexts/CartContext";
 
 export default function Navbar() {
@@ -70,7 +70,7 @@ export default function Navbar() {
               </Link>
               <Link
                 to="/register"
-                className="px-4 py-2 text-sm font-semibold rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white transition-all shadow-md"
+                className="px-4 py-2 text-sm font-semibold rounded-xl bg-linear-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white transition-all shadow-md"
               >
                 Registrarse
               </Link>

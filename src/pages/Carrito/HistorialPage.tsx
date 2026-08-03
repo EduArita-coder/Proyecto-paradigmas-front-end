@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { getTransacciones } from '../services/apiService';
-import type { Transaction } from '../services/apiService';
+import { getTransacciones } from '../../services/apiService';
+import type { Transaction } from '../../services/apiService';
 
 export default function HistorialPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -38,7 +38,7 @@ export default function HistorialPage() {
           </div>
         ) : transactions.length === 0 ? (
           <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-12 flex flex-col items-center justify-center text-slate-500">
-            <span className="text-5xl mb-4">📋</span>
+            <span className="text-5xl mb-4"></span>
             <p className="text-slate-300">Aún no tienes transacciones registradas.</p>
           </div>
         ) : (

@@ -1,8 +1,8 @@
 import { Route, Routes } from "react-router-dom"
 import HomePage from "../pages/HomePage"
-import CatalogoPage from "../pages/CatalogoPage"
-import CarritoPage from "../pages/CarritoPage"
-import HistorialPage from "../pages/HistorialPage"
+import CatalogoPage from "../pages/Carrito/CatalogoPage"
+import CarritoPage from "../pages/Carrito/CarritoPage"
+import HistorialPage from "../pages/Carrito/HistorialPage"
 import Navbar from "../components/Layout/Navbar"
 
 const Approuter = () => {
