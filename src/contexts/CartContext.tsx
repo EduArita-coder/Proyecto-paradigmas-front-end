@@ -114,7 +114,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
       {children}
     </CartContext.Provider>
   );
-  );
 }
 
 export function useCart() {

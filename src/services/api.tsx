@@ -1,4 +1,6 @@
-const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5074/api";
+import { getApiBaseUrl } from "../api/config";
+
+const BASE_URL = getApiBaseUrl();
 
 interface RequestOptions extends Omit<RequestInit, 'body'> {
   body?: any;
