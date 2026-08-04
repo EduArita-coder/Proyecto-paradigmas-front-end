@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCart } from "../contexts/CartContext";
+import { useCart } from "../../contexts/CartContext";
 
 export default function CarritoPage() {
   const { cart, loading, error, updateQuantity, removeItem, clearCart, checkout, total } = useCart();
@@ -8,9 +8,9 @@ export default function CarritoPage() {
   const navigate = useNavigate();
 
   const formatPrice = (amount: number) => {
-    return new Intl.NumberFormat("es-CR", {
+    return new Intl.NumberFormat("es-HN", {
       style: "currency",
-      currency: "CRC",
+      currency: "HNL",
       minimumFractionDigits: 0,
     }).format(amount);
   };
@@ -19,7 +19,7 @@ export default function CarritoPage() {
     try {
       setIsCheckingOut(true);
       const res = await checkout();
-      if (!res?.approvalUrl) {
+      if (res && !res.approvalUrl) {
         navigate("/checkout/success");
       }
     } catch (err) {
@@ -42,7 +42,7 @@ export default function CarritoPage() {
         </p>
 
         {loading && (
-          <div className="flex flex-col items-center justify-center min-h-[250px]">
+          <div className="flex flex-col items-center justify-center min-h-62.5">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
             <p className="text-slate-400 text-lg">Cargando tu carrito...</p>
           </div>
@@ -58,7 +58,7 @@ export default function CarritoPage() {
 
         {!loading && isCartEmpty && (
           <div className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-md p-16 flex flex-col items-center justify-center text-slate-500 text-center">
-            <span className="text-6xl mb-6">🛒</span>
+            <span className="text-6xl mb-6">{<img className = "min-h-2 h-50"src="/Images/ZombieCarrito.png"></img>}</span>
             <h3 className="text-xl font-bold text-white mb-2">Tu carrito está vacío</h3>
             <p className="text-slate-400 max-w-sm mb-8">
               Parece que aún no has agregado ningún plan de hosting a tu carrito.
@@ -83,15 +83,14 @@ export default function CarritoPage() {
                     className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 hover:bg-white/5 transition-colors"
                   >
                     <div className="flex items-center gap-4 flex-1">
-                      <div className="h-12 w-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-2xl text-blue-400 shrink-0">
-                        🎮
+                      <div className="h-8 w-8 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-2xl text-blue-400 shrink-0">
                       </div>
                       <div>
                         <h4 className="font-bold text-white text-lg">
                           {item.productName || "Servidor Dedicado"}
                         </h4>
                         <p className="text-slate-400 text-sm">
-                          Precio unitario: {formatPrice(item.unitPrice || 0)}
+                          Precio unitario: {formatPrice(item.unitPrice ?? item.price ?? 0)}
                         </p>
                       </div>
                     </div>
@@ -117,12 +116,12 @@ export default function CarritoPage() {
 
                     {/* Subtotal & Delete */}
                     <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto">
-                      <div className="text-right sm:min-w-[100px]">
+                      <div className="text-right sm:min-w-25">
                         <span className="block text-slate-500 text-[10px] uppercase font-semibold">
                           Subtotal
                         </span>
                         <span className="font-bold text-white text-base">
-                          {formatPrice(item.subtotal || 0)}
+                          {formatPrice(item.subtotal ?? (item.unitPrice ?? item.price ?? 0) * item.quantity)}
                         </span>
                       </div>
                       <button
@@ -130,7 +129,7 @@ export default function CarritoPage() {
                         className="text-red-400 hover:text-red-300 text-sm font-semibold transition-colors flex items-center gap-1 cursor-pointer bg-red-500/5 hover:bg-red-500/10 p-2 rounded-lg border border-red-500/10"
                         title="Quitar del carrito"
                       >
-                        🗑️ <span className="sm:inline hidden">Quitar</span>
+                         <span className="sm:inline hidden">Quitar</span>
                       </button>
                     </div>
                   </div>

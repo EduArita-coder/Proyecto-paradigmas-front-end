@@ -1,4 +1,5 @@
 import api from '../api/axios';
+import type { Producto } from '../interfaces/product';
 
 export interface Product {
   id: string;
@@ -14,14 +15,18 @@ export interface Product {
 export interface CartItem {
   productId: string;
   productName: string;
+  unitPrice: number;
   price: number;
   quantity: number;
+  subtotal: number;
   imageUrl?: string;
 }
 
 export interface Cart {
+  userId?: string;
   items: CartItem[];
   total: number;
+  totalAmount: number;
 }
 
 export interface Transaction {
@@ -36,7 +41,7 @@ export interface Transaction {
 }
 
 // Servidor / Productos
-export const getProductos = async (): Promise<Product[]> => {
+export const getProductos = async (): Promise<Producto[]> => {
   const response = await api.get('/productos');
   return response.data;
 };
@@ -66,6 +71,15 @@ export const clearCart = async (): Promise<void> => {
 export const checkoutCart = async (): Promise<{ approvalUrl?: string; orderId?: string }> => {
   const response = await api.post('/carrito/checkout');
   return response.data;
+};
+
+// Capturar/confirmar pago de PayPal después de la aprobación del usuario
+export const capturePayPalPayment = async (token: string, payerId?: string): Promise<void> => {
+  await api.post('/pagos/capture', { token, payerId });
+};
+
+export const getPayPalSuccess = async (token: string, payerId?: string): Promise<void> => {
+  await api.get(`/pagos/success?token=${token}${payerId ? `&PayerID=${payerId}` : ''}`);
 };
 
 // Transacciones (Filtra por el usuario autenticado)

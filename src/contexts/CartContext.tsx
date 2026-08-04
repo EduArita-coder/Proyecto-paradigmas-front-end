@@ -1,11 +1,10 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
-import { api } from "../services/api";
-import type { CartDto, CartItemDto } from "../interfaces/cart";
+import { getCart, addToCart, updateCartItemQuantity, removeFromCart, clearCart as apiClearCart, checkoutCart, capturePayPalPayment, getPayPalSuccess, type Cart } from "../services/apiService";
+import { useAuth } from "./AuthContext";
 import type { Producto } from "../interfaces/product";
-import { getSessionId } from "../utils/session";
 
 interface CartContextType {
-  cart: CartDto | null;
+  cart: Cart | null;
   loading: boolean;
   error: string | null;
   addItem: (product: Producto) => Promise<void>;
@@ -13,41 +12,44 @@ interface CartContextType {
   removeItem: (productId: string) => Promise<void>;
   clearCart: () => Promise<void>;
   checkout: () => Promise<{ approvalUrl?: string; orderId?: string } | void>;
+  capturePayment: (token: string, payerId?: string) => Promise<void>;
+  refreshCart: () => Promise<void>;
   total: number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [cart, setCart] = useState<CartDto | null>(null);
+  const { token } = useAuth();
+  const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const sessionId = getSessionId();
 
   const refreshCart = useCallback(async () => {
     try {
-      const data = await api.get<CartDto>(`/carrito/${sessionId}`);
+      const data = await getCart();
       setCart(data);
     } catch (err: any) {
       setError(err.message || "Error al cargar el carrito");
     } finally {
       setLoading(false);
     }
-  }, [sessionId]);
+  }, []);
 
   useEffect(() => {
-    refreshCart();
-  }, [refreshCart]);
+    if (token) {
+      refreshCart();
+    } else {
+      setCart(null);
+      setLoading(false);
+    }
+  }, [refreshCart, token]);
 
   const addItem = async (product: Producto) => {
     try {
       setError(null);
-      const itemPayload: CartItemDto = {
-        productId: product.id,
-        quantity: 1,
-      };
-      const updatedCart = await api.post<CartDto>(`/carrito/${sessionId}/items`, itemPayload);
-      setCart(updatedCart);
+      await addToCart(product.id, 1);
+      await refreshCart();
     } catch (err: any) {
       setError(err.message || "Error al agregar el producto al carrito");
       await refreshCart();
@@ -61,8 +63,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
     try {
       setError(null);
-      const updatedCart = await api.put<CartDto>(`/carrito/${sessionId}/items/${productId}`, quantity);
-      setCart(updatedCart);
+      await updateCartItemQuantity(productId, quantity);
+      await refreshCart();
     } catch (err: any) {
       setError(err.message || "Error al actualizar la cantidad");
       await refreshCart();
@@ -72,8 +74,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const removeItem = async (productId: string) => {
     try {
       setError(null);
-      const updatedCart = await api.delete<CartDto>(`/carrito/${sessionId}/items/${productId}`);
-      setCart(updatedCart);
+      await removeFromCart(productId);
+      await refreshCart();
     } catch (err: any) {
       setError(err.message || "Error al eliminar el producto");
       await refreshCart();
@@ -83,8 +85,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const clearCart = async () => {
     try {
       setError(null);
-      const updatedCart = await api.delete<CartDto>(`/carrito/${sessionId}`);
-      setCart(updatedCart);
+      await apiClearCart();
+      await refreshCart();
     } catch (err: any) {
       setError(err.message || "Error al vaciar el carrito");
       await refreshCart();
@@ -94,7 +96,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const checkout = async () => {
     try {
       setError(null);
-      const res = await api.post<{ approvalUrl?: string; orderId?: string }>(`/carrito/${sessionId}/checkout`);
+      const res = await checkoutCart();
       if (res?.approvalUrl) {
         window.location.href = res.approvalUrl;
       }
@@ -105,11 +107,30 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const total = cart?.totalAmount || 0;
+  const capturePayment = async (token: string, payerId?: string) => {
+    try {
+      setError(null);
+      // Llamar al backend para capturar/confirmar el pago de PayPal
+      await capturePayPalPayment(token, payerId);
+      // Limpiar el carrito local después de captura exitosa
+      setCart({ items: [], total: 0, totalAmount: 0 });
+    } catch {
+      // Si falla la captura con POST, intentar con el endpoint GET alternativo
+      try {
+        await getPayPalSuccess(token, payerId);
+        setCart({ items: [], total: 0, totalAmount: 0 });
+      } catch (captureErr: any) {
+        setError(captureErr.response?.data?.message || captureErr.message || "Error al confirmar el pago");
+        throw captureErr;
+      }
+    }
+  };
+
+  const total = cart?.totalAmount ?? cart?.total ?? 0;
 
   return (
     <CartContext.Provider
-      value={{ cart, loading, error, addItem, updateQuantity, removeItem, clearCart, checkout, total }}
+      value={{ cart, loading, error, addItem, updateQuantity, removeItem, clearCart, checkout, capturePayment, refreshCart, total }}
     >
       {children}
     </CartContext.Provider>
