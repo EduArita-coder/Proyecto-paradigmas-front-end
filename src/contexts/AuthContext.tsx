@@ -5,11 +5,13 @@ export interface User {
   id: string;
   userName: string;
   email: string;
+  roles: string[];
 }
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
+  isAdmin: boolean;
   isAuthenticated: boolean;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
@@ -29,7 +31,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (token) {
         try {
           const res = await api.get('/auth/me');
-          setUser(res.data);
+          const userData = res.data as {
+            id: string;
+            userName: string;
+            email: string;
+            roles?: string[];
+          };
+
+          setUser({
+            id: userData.id,
+            userName: userData.userName,
+            email: userData.email,
+            roles: userData.roles ?? [],
+          });
         } catch {
           // Token expirado o inválido
           localStorage.removeItem('token');
@@ -48,14 +62,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     const res = await api.post('/auth/login', { email, password });
-    const { token: jwtToken, userId, email: userEmail } = res.data;
-    
-    localStorage.setItem('token', jwtToken);
-    const userData = { id: userId, userName: userEmail.split('@')[0], email: userEmail };
-    localStorage.setItem('user', JSON.stringify(userData));
+    const { token: jwtToken } = res.data;
 
+    localStorage.setItem('token', jwtToken);
     setToken(jwtToken);
-    setUser(userData);
   };
 
   const register = async (userName: string, email: string, password: string) => {
@@ -74,6 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         token,
+        isAdmin: user?.roles.includes('Admin') ?? false,
         isAuthenticated: !!user || !!token,
         loading,
         login,
