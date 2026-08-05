@@ -51,8 +51,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       await addToCart(product.id, 1);
       await refreshCart();
     } catch (err: any) {
-      setError(err.message || "Error al agregar el producto al carrito");
+      const msg = err.response?.data?.message || (typeof err.response?.data === "string" ? err.response.data : null) || err.message || "Error al agregar el producto al carrito";
+      setError(msg);
       await refreshCart();
+      throw new Error(msg);
     }
   };
 

@@ -1,16 +1,35 @@
+import { useState } from "react";
 import type { Producto } from "../interfaces/product";
 
 interface ProductCardProps {
   product: Producto;
-  onAdd: (product: Producto) => void;
+  onAdd: (product: Producto) => Promise<void> | void;
+  isAdmin?: boolean;
+  onDelete?: (productId: string) => void;
 }
 
-export default function ProductCard({ product, onAdd }: ProductCardProps) {
+export default function ProductCard({ product, onAdd, isAdmin = false, onDelete }: ProductCardProps) {
+  const [adding, setAdding] = useState(false);
+  const [added, setAdded] = useState(false);
+
   const formattedPrice = new Intl.NumberFormat("es-HN", {
     style: "currency",
     currency: "HNL",
     minimumFractionDigits: 0,
   }).format(product.price);
+
+  const handleAddClick = async () => {
+    try {
+      setAdding(true);
+      await onAdd(product);
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2000);
+    } catch {
+      // Error manejado en componente padre
+    } finally {
+      setAdding(false);
+    }
+  };
 
   return (
     <div className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-md p-6 flex flex-col justify-between transition-all duration-300 hover:border-white/20 hover:scale-[1.02] shadow-xl group">
@@ -65,12 +84,28 @@ export default function ProductCard({ product, onAdd }: ProductCardProps) {
           </span>
         </div>
 
-        <button
-          onClick={() => onAdd(product)}
-          className="w-full py-2.5 px-4 bg-linear-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-semibold rounded-lg shadow-lg hover:shadow-cyan-500/20 transition-all duration-200 cursor-pointer text-center text-sm"
-        >
-          Agregar al Carrito
-        </button>
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={handleAddClick}
+            disabled={adding}
+            className={`w-full py-2.5 px-4 font-semibold rounded-lg shadow-lg transition-all duration-200 cursor-pointer text-center text-sm ${
+              added
+                ? "bg-emerald-600 hover:bg-emerald-500 text-white"
+                : "bg-linear-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white hover:shadow-cyan-500/20"
+            } disabled:opacity-60`}
+          >
+            {adding ? "Agregando..." : added ? "✓ ¡Agregado al Carrito!" : "Agregar al Carrito"}
+          </button>
+
+          {isAdmin && onDelete && (
+            <button
+              onClick={() => onDelete(product.id)}
+              className="w-full py-2.5 px-4 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-lg shadow-lg hover:shadow-red-500/20 transition-all duration-200 cursor-pointer text-center text-sm"
+            >
+              Eliminar producto
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
