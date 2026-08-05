@@ -73,6 +73,15 @@ export const checkoutCart = async (): Promise<{ approvalUrl?: string; orderId?: 
   return response.data;
 };
 
+// Capturar/confirmar pago de PayPal después de la aprobación del usuario
+export const capturePayPalPayment = async (token: string, payerId?: string): Promise<void> => {
+  await api.post('/pagos/capture', { token, payerId });
+};
+
+export const getPayPalSuccess = async (token: string, payerId?: string): Promise<void> => {
+  await api.get(`/pagos/success?token=${token}${payerId ? `&PayerID=${payerId}` : ''}`);
+};
+
 // Transacciones (Filtra por el usuario autenticado)
 export const getTransacciones = async (): Promise<Transaction[]> => {
   const response = await api.get('/transacciones');

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
-import { getCart, addToCart, updateCartItemQuantity, removeFromCart, clearCart as apiClearCart, checkoutCart, type Cart } from "../services/apiService";
+import { getCart, addToCart, updateCartItemQuantity, removeFromCart, clearCart as apiClearCart, checkoutCart, capturePayPalPayment, getPayPalSuccess, type Cart } from "../services/apiService";
 import { useAuth } from "./AuthContext";
 import type { Producto } from "../interfaces/product";
 
@@ -12,6 +12,8 @@ interface CartContextType {
   removeItem: (productId: string) => Promise<void>;
   clearCart: () => Promise<void>;
   checkout: () => Promise<{ approvalUrl?: string; orderId?: string } | void>;
+  capturePayment: (token: string, payerId?: string) => Promise<void>;
+  refreshCart: () => Promise<void>;
   total: number;
 }
 
@@ -105,11 +107,30 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const capturePayment = async (token: string, payerId?: string) => {
+    try {
+      setError(null);
+      // Llamar al backend para capturar/confirmar el pago de PayPal
+      await capturePayPalPayment(token, payerId);
+      // Limpiar el carrito local después de captura exitosa
+      setCart({ items: [], total: 0, totalAmount: 0 });
+    } catch {
+      // Si falla la captura con POST, intentar con el endpoint GET alternativo
+      try {
+        await getPayPalSuccess(token, payerId);
+        setCart({ items: [], total: 0, totalAmount: 0 });
+      } catch (captureErr: any) {
+        setError(captureErr.response?.data?.message || captureErr.message || "Error al confirmar el pago");
+        throw captureErr;
+      }
+    }
+  };
+
   const total = cart?.totalAmount ?? cart?.total ?? 0;
 
   return (
     <CartContext.Provider
-      value={{ cart, loading, error, addItem, updateQuantity, removeItem, clearCart, checkout, total }}
+      value={{ cart, loading, error, addItem, updateQuantity, removeItem, clearCart, checkout, capturePayment, refreshCart, total }}
     >
       {children}
     </CartContext.Provider>
