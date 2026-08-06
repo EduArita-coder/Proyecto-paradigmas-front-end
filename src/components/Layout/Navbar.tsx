@@ -15,6 +15,7 @@ export default function Navbar() {
   const links = [
     { label: "Inicio", to: "/" },
     { label: "Catálogo", to: "/catalogo" },
+    ...(isAuthenticated ? [{ label: "Mis Servidores", to: "/mis-servidores" }] : []),
     { label: cartItemsCount > 0 ? `Carrito (${cartItemsCount})` : "Carrito", to: "/carrito" },
     { label: "Historial", to: "/historial" },
   ];
