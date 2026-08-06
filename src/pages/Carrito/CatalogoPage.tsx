@@ -1,25 +1,27 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { getProductos, deleteProducto } from "../../services/apiService";
+import { getProductos, createProducto, updateProducto, deleteProducto } from "../../services/apiService";
 import type { Producto } from "../../interfaces/product";
 import { useCart } from "../../contexts/CartContext";
 import { useAuth } from "../../contexts/AuthContext";
+import { useToast } from "../../contexts/ToastContext";
 import ProductCard from "../../components/ProductCard";
+import EditProductModal from "../../components/Admin/EditProductModal";
 
 export default function CatalogoPage() {
   const [products, setProducts] = useState<Producto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  const [editingProduct, setEditingProduct] = useState<Producto | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { addItem } = useCart();
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
-  const showToast = (message: string, type: "success" | "error") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3500);
-  };
+  const isAdmin = user?.role === "Admin" || user?.userName?.toLowerCase() === "admin";
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -43,47 +45,63 @@ export default function CatalogoPage() {
       navigate("/login");
       return;
     }
+    addItem(product);
+    showToast(`"${product.name}" agregado al carrito`, "success");
+  };
+
+  const handleOpenCreateModal = () => {
+    setEditingProduct(null);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEditModal = (product: Producto) => {
+    setEditingProduct(product);
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteProduct = async (id: string) => {
     try {
-      await addItem(product);
-      showToast(`¡${product.name} fue agregado al carrito!`, "success");
+      await deleteProducto(id);
+      showToast("Producto eliminado correctamente", "warning");
+      fetchProducts();
     } catch (err: any) {
-      showToast(err.message || "No se pudo agregar el producto al carrito", "error");
+      showToast(err.response?.data?.message || "Error al eliminar producto", "error");
     }
   };
 
-  const handleDelete = async (productId: string) => {
-    try {
-      await deleteProducto(productId);
-      setProducts((prev) => prev.filter((product) => product.id !== productId));
-      showToast("Producto eliminado correctamente", "success");
-    } catch (err: any) {
-      showToast(err.response?.data?.message || err.message || "Error al eliminar el producto.", "error");
+  const handleSaveProduct = async (productData: Omit<Producto, "id">, id?: string) => {
+    if (id) {
+      await updateProducto(id, productData);
+      showToast("Servidor actualizado con éxito", "success");
+    } else {
+      await createProducto(productData);
+      showToast("Nuevo servidor creado con éxito", "success");
     }
+    fetchProducts();
   };
 
   return (
     <main className="min-h-[calc(100vh-64px)] px-6 py-12 relative">
       <div className="max-w-6xl mx-auto">
-        {/* Floating Toast Notification */}
-        {toast && (
-          <div
-            className={`fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-2xl backdrop-blur-md border flex items-center gap-3 transition-all animate-bounce ${
-              toast.type === "success"
-                ? "bg-emerald-950/90 border-emerald-500/40 text-emerald-200"
-                : "bg-red-950/90 border-red-500/40 text-red-200"
-            }`}
-          >
-            <span>{toast.type === "success" ? "🛒" : "⚠️"}</span>
-            <span className="text-sm font-semibold">{toast.message}</span>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-2">
+              Nuestros Servidores
+            </h1>
+            <p className="text-slate-400 text-base">
+              Elige el juego y el plan que mejor se adapte a tu comunidad.
+            </p>
           </div>
-        )}
 
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-2">
-          Nuestros Servidores
-        </h1>
-        <p className="text-slate-400 text-lg mb-10">
-          Elige el juego y el plan que mejor se adapte a tu comunidad.
-        </p>
+          {isAdmin && (
+            <button
+              onClick={handleOpenCreateModal}
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-semibold text-sm shadow-lg shadow-cyan-500/20 transition-all cursor-pointer flex items-center gap-2"
+            >
+              <span>➕ Agregar Nuevo Plan</span>
+            </button>
+          )}
+        </div>
 
         {loading && (
           <div className="flex flex-col items-center justify-center min-h-75">
@@ -112,9 +130,7 @@ export default function CatalogoPage() {
 
         {!loading && !error && products.length === 0 && (
           <div className="max-w-md mx-auto text-center bg-white/5 border border-white/10 rounded-2xl p-12 backdrop-blur-md">
-            <span className="text-5xl mb-4 block">
-              <img className="min-h-2 mx-auto" src="Images/Steve.png" alt="Sin productos" />
-            </span>
+            <span className="text-5xl mb-4 block">🎮</span>
             <h3 className="text-xl font-bold text-white mb-2">
               No hay planes disponibles
             </h3>
@@ -131,13 +147,20 @@ export default function CatalogoPage() {
                 key={product.id}
                 product={product}
                 onAdd={handleAdd}
-                isAdmin={isAdmin}
-                onDelete={isAdmin ? handleDelete : undefined}
+                onEdit={handleOpenEditModal}
+                onDelete={handleDeleteProduct}
               />
             ))}
           </div>
         )}
       </div>
+
+      <EditProductModal
+        product={editingProduct}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveProduct}
+      />
     </main>
   );
 }

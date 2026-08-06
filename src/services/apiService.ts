@@ -46,6 +46,31 @@ export const getProductos = async (): Promise<Producto[]> => {
   return response.data;
 };
 
+export const createProducto = async (productData: Omit<Producto, 'id'>): Promise<Producto> => {
+  const response = await api.post('/productos', productData);
+  return response.data;
+};
+
+export const updateProducto = async (id: string, productData: Omit<Producto, 'id'>): Promise<Producto> => {
+  const response = await api.put(`/productos/${id}`, productData);
+  return response.data;
+};
+
+export const deleteProducto = async (id: string): Promise<void> => {
+  await api.delete(`/productos/${id}`);
+};
+
+export const uploadProductoImagen = async (file: File): Promise<string> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const response = await api.post('/productos/upload', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data.imageUrl;
+};
+
 // Carrito (Backend maneja userId automáticamente vía JWT)
 export const getCart = async (): Promise<Cart> => {
   const response = await api.get('/carrito');
