@@ -112,3 +112,18 @@ export const getTransacciones = async (): Promise<Transaction[]> => {
   const response = await api.get('/transacciones');
   return response.data;
 };
+
+// Administración de productos (requieres token de Admin)
+export const createProducto = async (producto: Omit<Producto, 'id'>): Promise<Producto> => {
+  const response = await api.post('/productos', producto);
+  return response.data;
+};
+
+export const updateProducto = async (id: string, producto: Omit<Producto, 'id'>): Promise<Producto> => {
+  const response = await api.put(`/productos/${id}`, producto);
+  return response.data;
+};
+
+export const deleteProducto = async (id: string): Promise<void> => {
+  await api.delete(`/productos/${id}`);
+};

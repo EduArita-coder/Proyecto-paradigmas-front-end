@@ -7,7 +7,7 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAdmin, isAuthenticated, logout } = useAuth();
   const { cart } = useCart();
 
   const cartItemsCount = cart?.items?.reduce((acc, item) => acc + item.quantity, 0) || 0;
@@ -18,6 +18,7 @@ export default function Navbar() {
     ...(isAuthenticated ? [{ label: "Mis Servidores", to: "/mis-servidores" }] : []),
     { label: cartItemsCount > 0 ? `Carrito (${cartItemsCount})` : "Carrito", to: "/carrito" },
     { label: "Historial", to: "/historial" },
+    ...(isAdmin ? [{ label: "Admin", to: "/admin" }] : []),
   ];
 
   const handleLogout = () => {

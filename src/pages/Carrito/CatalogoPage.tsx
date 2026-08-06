@@ -40,7 +40,7 @@ export default function CatalogoPage() {
     fetchProducts();
   }, [fetchProducts]);
 
-  const handleAdd = (product: Producto) => {
+  const handleAdd = async (product: Producto) => {
     if (!isAuthenticated) {
       navigate("/login");
       return;
@@ -81,7 +81,7 @@ export default function CatalogoPage() {
   };
 
   return (
-    <main className="min-h-[calc(100vh-64px)] px-6 py-12">
+    <main className="min-h-[calc(100vh-64px)] px-6 py-12 relative">
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
           <div>
